@@ -38,19 +38,23 @@ class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
   TabController _tabController;
   bool closeTopContainer = false;
-  ScrollController controller1 = ScrollController();
+  ScrollController scrollController = ScrollController();
   AnimatedCarouselProvider provider;
+  var _refreshKey = GlobalKey<RefreshIndicatorState>();
+
   @override
   void initState() {
     Provider.of<AnimatedCarouselProvider>(context, listen: false).setElevation =
-        150.0;
+        170.0;
+    Provider.of<AnimatedCarouselProvider>(context, listen: false).setIndex = 0;
     _tabController = TabController(vsync: this, length: 2);
-    controller1.addListener(onScroll);
+    scrollController.addListener(onScroll);
+    _onRefreshPage();
     super.initState();
   }
 
   onScroll() {
-    closeTopContainer = controller1.position.pixels > 100;
+    closeTopContainer = scrollController.position.pixels > 100;
     if (closeTopContainer) {
       Provider.of<AnimatedCarouselProvider>(context, listen: false)
           .disableHeight();
@@ -58,14 +62,21 @@ class _MyHomePageState extends State<MyHomePage>
       Provider.of<AnimatedCarouselProvider>(context, listen: false)
           .enableHeight();
     }
-    if (controller1.position.maxScrollExtent == controller1.position.pixels) {
+    if (scrollController.position.maxScrollExtent ==
+        scrollController.position.pixels) {
       print("Load more");
     }
   }
 
+  Future<Null> _onRefreshPage() async {
+    _refreshKey.currentState?.show();
+    await Future.delayed(Duration(seconds: 2), () {});
+    return null;
+  }
+
   @override
   void dispose() {
-    controller1.dispose();
+    scrollController.dispose();
     super.dispose();
   }
 
@@ -77,8 +88,19 @@ class _MyHomePageState extends State<MyHomePage>
         centerTitle: true,
         title: Text(
           "Annimation Opacity Demo",
-          style: GoogleFonts.montserrat(),
+          style: GoogleFonts.montserrat(fontSize: 16),
+          overflow: TextOverflow.ellipsis,
         ),
+        leading: IconButton(
+          icon: Icon(Icons.sort),
+          onPressed: () {},
+        ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.notifications),
+            onPressed: () {},
+          )
+        ],
       ),
       body: SingleChildScrollView(
         physics: NeverScrollableScrollPhysics(),
@@ -162,34 +184,38 @@ class _MyHomePageState extends State<MyHomePage>
               child: TabBarView(
                 controller: _tabController,
                 children: [
+                  RefreshIndicator(
+                    key: _refreshKey,
+                    onRefresh: _onRefreshPage,
+                    child: ListView.builder(
+                        controller: scrollController,
+                        itemCount: 10,
+                        shrinkWrap: true,
+                        physics: BouncingScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          return Container(
+                              width: MediaQuery.of(context).size.width,
+                              height: 100,
+                              margin: EdgeInsets.only(
+                                  top: 16,
+                                  left: 16,
+                                  right: 16,
+                                  bottom: index + 1 == 10 ? 100 : 0),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                  color: index % 2 == 0
+                                      ? Colors.amber
+                                      : Colors.blueAccent,
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10))),
+                              child: Text(
+                                'Image ${index + 1}',
+                                style: TextStyle(fontSize: 16.0),
+                              ));
+                        }),
+                  ),
                   ListView.builder(
-                      controller: controller1,
-                      itemCount: 10,
-                      shrinkWrap: true,
-                      physics: BouncingScrollPhysics(),
-                      itemBuilder: (context, index) {
-                        return Container(
-                            width: MediaQuery.of(context).size.width,
-                            height: 100,
-                            margin: EdgeInsets.only(
-                                top: 16,
-                                left: 16,
-                                right: 16,
-                                bottom: index + 1 == 10 ? 100 : 0),
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                                color: index % 2 == 0
-                                    ? Colors.amber
-                                    : Colors.blueAccent,
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10))),
-                            child: Text(
-                              'Image ${index + 1}',
-                              style: TextStyle(fontSize: 16.0),
-                            ));
-                      }),
-                  ListView.builder(
-                      controller: controller1,
+                      controller: scrollController,
                       itemCount: 10,
                       shrinkWrap: true,
                       physics: BouncingScrollPhysics(),
@@ -222,31 +248,64 @@ class _MyHomePageState extends State<MyHomePage>
       );
 
   Widget topContainer() {
-    return CarouselSlider(
-      options: CarouselOptions(
-        enlargeCenterPage: true,
-        height: provider.carouselHeight,
-        autoPlay: true,
-        enableInfiniteScroll: true,
-        autoPlayAnimationDuration: Duration(seconds: 2),
-      ),
-      items: [1, 2, 3, 4, 5].map((i) {
-        return Builder(
-          builder: (BuildContext context) {
-            return Container(
-                width: MediaQuery.of(context).size.width,
-                margin: EdgeInsets.only(top: 16, left: 5, right: 5),
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                    color: Colors.amber,
-                    borderRadius: BorderRadius.all(Radius.circular(10))),
-                child: Text(
-                  'Image $i',
-                  style: TextStyle(fontSize: 16.0),
-                ));
-          },
-        );
-      }).toList(),
+    return ListView(
+      physics: NeverScrollableScrollPhysics(),
+      children: <Widget>[
+        CarouselSlider(
+          options: CarouselOptions(
+              enlargeCenterPage: true,
+              height: 150,
+              autoPlay: true,
+              enableInfiniteScroll: true,
+              initialPage: 0,
+              autoPlayCurve: Curves.easeInOutBack,
+              autoPlayAnimationDuration: Duration(seconds: 2),
+              onPageChanged: (index, reason) {
+                provider.onIndexChanged(index);
+              }),
+          items: [1, 2, 3, 4, 5].map((i) {
+            return Builder(
+              builder: (BuildContext context) {
+                return Container(
+                    width: MediaQuery.of(context).size.width,
+                    margin: EdgeInsets.only(top: 16, left: 5, right: 5),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                        color: Colors.amber,
+                        borderRadius: BorderRadius.all(Radius.circular(10))),
+                    child: Text(
+                      'Image $i',
+                      style: TextStyle(fontSize: 16.0),
+                    ));
+              },
+            );
+          }).toList(),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(right: 16, top: 5),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [1, 2, 3, 4, 5].map((url) {
+              int index = [1, 2, 3, 4, 5].indexOf(url);
+              return FittedBox(
+                fit: BoxFit.fill,
+                alignment: Alignment.topCenter,
+                child: Container(
+                  width: 16.0,
+                  height: 5.0,
+                  margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: provider.carouselIndex == index
+                        ? Colors.blueAccent
+                        : Colors.grey.withOpacity(0.3),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
     );
   }
 }
