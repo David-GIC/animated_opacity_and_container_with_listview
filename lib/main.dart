@@ -58,6 +58,9 @@ class _MyHomePageState extends State<MyHomePage>
       Provider.of<AnimatedCarouselProvider>(context, listen: false)
           .enableHeight();
     }
+    if (controller1.position.maxScrollExtent == controller1.position.pixels) {
+      print("Load more");
+    }
   }
 
   @override
@@ -73,7 +76,7 @@ class _MyHomePageState extends State<MyHomePage>
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-          "Flutter Demo",
+          "Annimation Opacity Demo",
           style: GoogleFonts.montserrat(),
         ),
       ),
@@ -93,6 +96,42 @@ class _MyHomePageState extends State<MyHomePage>
                     alignment: Alignment.topCenter,
                     height: closeTopContainer ? 0.0 : provider.carouselHeight,
                     child: topContainer()),
+              ),
+              SizedBox(
+                height: 15,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  RaisedButton.icon(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                      padding: EdgeInsets.only(
+                          left: 20, right: 20, top: 10, bottom: 10),
+                      onPressed: () {},
+                      color: Colors.amber,
+                      icon: Icon(
+                        Icons.restaurant,
+                        color: Colors.white,
+                      ),
+                      label: Text(
+                        "Restaurant",
+                        style: TextStyle(color: Colors.white),
+                      )),
+                  RaisedButton.icon(
+                      onPressed: () {},
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                      padding: EdgeInsets.only(
+                          left: 20, right: 20, top: 10, bottom: 10),
+                      color: Colors.blueAccent,
+                      icon: Icon(
+                        Icons.shopping_basket,
+                        color: Colors.white,
+                      ),
+                      label: Text("Go Shopping",
+                          style: TextStyle(color: Colors.white))),
+                ],
               ),
               _tabView()
             ],
