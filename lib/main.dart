@@ -41,6 +41,7 @@ class _MyHomePageState extends State<MyHomePage>
   ScrollController scrollController = ScrollController();
   AnimatedCarouselProvider provider;
   var _refreshKey = GlobalKey<RefreshIndicatorState>();
+  GlobalKey<ScaffoldState> _key = new GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -84,6 +85,7 @@ class _MyHomePageState extends State<MyHomePage>
   Widget build(BuildContext context) {
     provider = Provider.of<AnimatedCarouselProvider>(context);
     return Scaffold(
+      key: _key,
       appBar: AppBar(
         centerTitle: true,
         title: Text(
@@ -93,7 +95,7 @@ class _MyHomePageState extends State<MyHomePage>
         ),
         leading: IconButton(
           icon: Icon(Icons.sort),
-          onPressed: () {},
+          onPressed: () => _key.currentState.openDrawer(),
         ),
         actions: <Widget>[
           IconButton(
@@ -156,6 +158,66 @@ class _MyHomePageState extends State<MyHomePage>
                 ],
               ),
               _tabView()
+            ],
+          ),
+        ),
+      ),
+      drawer: Drawer(
+        child: MediaQuery.removePadding(
+          context: context,
+          removeTop: true,
+          child: ListView(
+            children: <Widget>[
+              Container(
+                height: 30,
+                color: Colors.blueAccent,
+              ),
+              UserAccountsDrawerHeader(
+                margin: EdgeInsets.all(0),
+                accountEmail: Text("david@gmail.com"),
+                accountName: Text("David Dev"),
+                currentAccountPicture: Icon(
+                  Icons.supervised_user_circle,
+                  color: Colors.grey,
+                  size: 50,
+                ),
+              ),
+              ListTile(
+                leading: Icon(Icons.shopping_basket),
+                onTap: () {},
+                title: Text("My Order"),
+                trailing: Icon(
+                  Icons.arrow_forward_ios,
+                  size: 15,
+                ),
+              ),
+              ListTile(
+                leading: Icon(Icons.translate),
+                onTap: () {},
+                title: Text("Language"),
+                trailing: Icon(
+                  Icons.arrow_forward_ios,
+                  size: 15,
+                ),
+              ),
+              ListTile(
+                leading: Icon(Icons.settings),
+                onTap: () {},
+                title: Text("Setting"),
+                trailing: Icon(
+                  Icons.arrow_forward_ios,
+                  size: 15,
+                ),
+              ),
+              ListTile(
+                leading: Icon(Icons.error),
+                onTap: () {},
+                title: Text("About Us"),
+                trailing: Icon(
+                  Icons.arrow_forward_ios,
+                  size: 15,
+                ),
+              )
             ],
           ),
         ),
