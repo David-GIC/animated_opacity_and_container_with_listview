@@ -1,5 +1,7 @@
 import 'package:animated_opacity_nasted_scroll/provider.dart';
-import 'package:carousel_slider/carousel_slider.dart';
+import 'package:animated_opacity_nasted_scroll/widgets/drawer.dart';
+import 'package:animated_opacity_nasted_scroll/widgets/slider.dart';
+import 'package:animated_opacity_nasted_scroll/widgets/tab_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -40,7 +42,6 @@ class _MyHomePageState extends State<MyHomePage>
   bool closeTopContainer = false;
   ScrollController scrollController = ScrollController();
   AnimatedCarouselProvider provider;
-  var _refreshKey = GlobalKey<RefreshIndicatorState>();
   GlobalKey<ScaffoldState> _key = new GlobalKey<ScaffoldState>();
 
   @override
@@ -70,7 +71,6 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   Future<Null> _onRefreshPage() async {
-    _refreshKey.currentState?.show();
     await Future.delayed(Duration(seconds: 2), () {});
     return null;
   }
@@ -119,7 +119,9 @@ class _MyHomePageState extends State<MyHomePage>
                     width: MediaQuery.of(context).size.width,
                     alignment: Alignment.topCenter,
                     height: closeTopContainer ? 0.0 : provider.carouselHeight,
-                    child: topContainer()),
+                    child: SliderWidget(
+                      provider: provider,
+                    )),
               ),
               SizedBox(
                 height: 15,
@@ -157,217 +159,16 @@ class _MyHomePageState extends State<MyHomePage>
                           style: TextStyle(color: Colors.white))),
                 ],
               ),
-              _tabView()
-            ],
-          ),
-        ),
-      ),
-      drawer: Drawer(
-        child: MediaQuery.removePadding(
-          context: context,
-          removeTop: true,
-          child: ListView(
-            children: <Widget>[
-              Container(
-                height: 30,
-                color: Colors.blueAccent,
-              ),
-              UserAccountsDrawerHeader(
-                margin: EdgeInsets.all(0),
-                accountEmail: Text("david@gmail.com"),
-                accountName: Text("David Dev"),
-                currentAccountPicture: Icon(
-                  Icons.supervised_user_circle,
-                  color: Colors.grey,
-                  size: 50,
-                ),
-              ),
-              ListTile(
-                leading: Icon(Icons.shopping_basket),
-                onTap: () {},
-                title: Text("My Order"),
-                trailing: Icon(
-                  Icons.arrow_forward_ios,
-                  size: 15,
-                ),
-              ),
-              ListTile(
-                leading: Icon(Icons.translate),
-                onTap: () {},
-                title: Text("Language"),
-                trailing: Icon(
-                  Icons.arrow_forward_ios,
-                  size: 15,
-                ),
-              ),
-              ListTile(
-                leading: Icon(Icons.settings),
-                onTap: () {},
-                title: Text("Setting"),
-                trailing: Icon(
-                  Icons.arrow_forward_ios,
-                  size: 15,
-                ),
-              ),
-              ListTile(
-                leading: Icon(Icons.error),
-                onTap: () {},
-                title: Text("About Us"),
-                trailing: Icon(
-                  Icons.arrow_forward_ios,
-                  size: 15,
-                ),
+              TabBarAndTabViewWidget(
+                scrollController: scrollController,
+                onRefreshPage: _onRefreshPage,
+                tabController: _tabController,
               )
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _tabView() => Expanded(
-        child: Column(
-          children: <Widget>[
-            TabBar(
-              controller: _tabController,
-              tabs: [
-                Tab(
-                  child: Text(
-                    "Tab 1",
-                    style: TextStyle(color: Colors.black),
-                  ),
-                ),
-                Tab(
-                  child: Text("Tab 2", style: TextStyle(color: Colors.black)),
-                ),
-              ],
-            ),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  RefreshIndicator(
-                    key: _refreshKey,
-                    onRefresh: _onRefreshPage,
-                    child: ListView.builder(
-                        controller: scrollController,
-                        itemCount: 10,
-                        shrinkWrap: true,
-                        physics: BouncingScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          return Container(
-                              width: MediaQuery.of(context).size.width,
-                              height: 100,
-                              margin: EdgeInsets.only(
-                                  top: 16,
-                                  left: 16,
-                                  right: 16,
-                                  bottom: index + 1 == 10 ? 100 : 0),
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                  color: index % 2 == 0
-                                      ? Colors.amber
-                                      : Colors.blueAccent,
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(10))),
-                              child: Text(
-                                'Image ${index + 1}',
-                                style: TextStyle(fontSize: 16.0),
-                              ));
-                        }),
-                  ),
-                  ListView.builder(
-                      controller: scrollController,
-                      itemCount: 10,
-                      shrinkWrap: true,
-                      physics: BouncingScrollPhysics(),
-                      itemBuilder: (context, index) {
-                        return Container(
-                            width: MediaQuery.of(context).size.width,
-                            height: 100,
-                            margin: EdgeInsets.only(
-                                top: 16,
-                                left: 16,
-                                right: 16,
-                                bottom: index + 1 == 10 ? 100 : 0),
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                                color: index % 2 == 0
-                                    ? Colors.amber
-                                    : Colors.blueAccent,
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10))),
-                            child: Text(
-                              'Image ${index + 1}',
-                              style: TextStyle(fontSize: 16.0),
-                            ));
-                      }),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
-
-  Widget topContainer() {
-    return ListView(
-      physics: NeverScrollableScrollPhysics(),
-      children: <Widget>[
-        CarouselSlider(
-          options: CarouselOptions(
-              enlargeCenterPage: true,
-              height: 150,
-              autoPlay: true,
-              enableInfiniteScroll: true,
-              initialPage: 0,
-              autoPlayCurve: Curves.easeInOutBack,
-              autoPlayAnimationDuration: Duration(seconds: 2),
-              onPageChanged: (index, reason) {
-                provider.onIndexChanged(index);
-              }),
-          items: [1, 2, 3, 4, 5].map((i) {
-            return Builder(
-              builder: (BuildContext context) {
-                return Container(
-                    width: MediaQuery.of(context).size.width,
-                    margin: EdgeInsets.only(top: 16, left: 5, right: 5),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                        color: Colors.amber,
-                        borderRadius: BorderRadius.all(Radius.circular(10))),
-                    child: Text(
-                      'Image $i',
-                      style: TextStyle(fontSize: 16.0),
-                    ));
-              },
-            );
-          }).toList(),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(right: 16, top: 5),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [1, 2, 3, 4, 5].map((url) {
-              int index = [1, 2, 3, 4, 5].indexOf(url);
-              return FittedBox(
-                fit: BoxFit.fill,
-                alignment: Alignment.topCenter,
-                child: Container(
-                  width: 16.0,
-                  height: 5.0,
-                  margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    color: provider.carouselIndex == index
-                        ? Colors.blueAccent
-                        : Colors.grey.withOpacity(0.3),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
+      drawer: MyDrawer(),
     );
   }
 }
